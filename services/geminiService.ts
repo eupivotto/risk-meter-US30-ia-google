@@ -1,15 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { Indicator } from '../types';
 
-const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-  // This is a fallback for development, but the environment must have the API key.
-  console.warn("API_KEY environment variable not set. Using a placeholder. The app will not function correctly without a valid key.");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
-
 const generatePrompt = (indicators: Indicator[]): string => {
     const data = indicators.reduce((acc, ind) => {
         let valueStr = ind.value.toFixed(2);
@@ -64,7 +55,15 @@ const generatePrompt = (indicators: Indicator[]): string => {
 };
 
 export const getMarketSentiment = async (indicators: Indicator[]): Promise<string> => {
+  const API_KEY = process.env.VITE_API_KEY;
+  
+  if (!API_KEY) {
+    console.error("VITE_API_KEY environment variable not set.");
+    return "Erro de configuração: A variável de ambiente VITE_API_KEY (Gemini) não foi configurada. Por favor, adicione-a nas configurações do seu ambiente de produção (Vercel).";
+  }
+  
   try {
+    const ai = new GoogleGenAI({ apiKey: API_KEY });
     const prompt = generatePrompt(indicators);
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -73,6 +72,9 @@ export const getMarketSentiment = async (indicators: Indicator[]): Promise<strin
     return response.text;
   } catch (error) {
     console.error("Error fetching sentiment from Gemini API:", error);
-    return "Ocorreu um erro ao buscar a análise de sentimento. Por favor, verifique a chave da API e tente novamente.";
+    if (error instanceof Error && error.message.includes('API key not valid')) {
+         return "Ocorreu um erro ao buscar a análise de sentimento: A chave da API (VITE_API_KEY) é inválida. Por favor, verifique a chave e tente novamente.";
+    }
+    return "Ocorreu um erro ao buscar a análise de sentimento. Por favor, verifique o console para mais detalhes e se a sua chave de API é válida.";
   }
 };
