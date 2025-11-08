@@ -1,4 +1,3 @@
-// FIX: Add reference to vite/client to resolve 'import.meta.env' type error.
 /// <reference types="vite/client" />
 
 import { GoogleGenAI } from "@google/genai";
@@ -29,13 +28,10 @@ const generatePrompt = (indicators: Indicator[]): string => {
       - S&P 500: ${data.SPX500.value} (${data.SPX500.changePercent}%)
       - Nasdaq 100: ${data.NAS100.value} (${data.NAS100.changePercent}%)
       - VIX (Índice de Medo): ${data.VIX.value} (${data.VIX.changePercent}%)
-      - MOVE (Volatilidade de Títulos): ${data.MOVE.value} (${data.MOVE.changePercent}%)
-      - NYSE TICK ($TICK): ${data.TICK.value}
       - DXY (Índice do Dólar): ${data.DXY.value} (${data.DXY.changePercent}%)
       - Ouro (XAU/USD): ${data.XAUUSD.value} (${data.XAUUSD.changePercent}%)
       - Petróleo (WTI): ${data.WTI.value} (${data.WTI.changePercent}%)
       - Rendimento do Tesouro de 10 Anos: ${data.US10Y.value}
-      - Rendimento do Tesouro de 30 Anos: ${data.US30Y.value}
 
       Baseado nesses dados, forneça a seguinte análise em português do Brasil, usando markdown para formatação:
 
@@ -43,7 +39,7 @@ const generatePrompt = (indicators: Indicator[]): string => {
       **Classificação:** (Ex: Altamente Otimista, Moderadamente Pessimista, Neutro com viés de alta, etc.)
 
       ### Análise Resumida
-      Um parágrafo curto explicando o porquê do sentimento. Analise a correlação entre os ativos (por exemplo, um VIX ou MOVE em alta indica medo e aversão ao risco; a força do DXY pode impactar as exportações das empresas do US30; rendimentos em alta podem pressionar as ações). Use o valor do $TICK como um termômetro instantâneo do sentimento comprador/vendedor (valores extremos como acima de +800 ou abaixo de -800 indicam euforia ou pânico).
+      Um parágrafo curto explicando o porquê do sentimento. Analise a correlação entre os ativos (por exemplo, um VIX em alta indica medo e aversão ao risco; a força do DXY pode impactar as exportações das empresas do US30; rendimentos em alta podem pressionar as ações).
 
       ### Fatores Chave
       - **Fator 1:** Descreva o principal fator de influência.
@@ -58,30 +54,24 @@ const generatePrompt = (indicators: Indicator[]): string => {
 };
 
 export const getMarketSentiment = async (indicators: Indicator[]): Promise<string> => {
-  // FIX: Access environment variables using import.meta.env for Vite projects
-  // and use VITE_API_KEY for the Gemini API key.
   const API_KEY = import.meta.env.VITE_API_KEY;
   
   if (!API_KEY) {
-    // FIX: Update error message to reference VITE_API_KEY.
     console.error("VITE_API_KEY environment variable not set.");
     return "Erro de configuração: A variável de ambiente VITE_API_KEY (Gemini) não foi configurada. Por favor, adicione-a nas configurações do seu ambiente de produção (Vercel).";
   }
   
   try {
-    // FIX: Pass API key in an object: { apiKey: API_KEY }
     const ai = new GoogleGenAI({ apiKey: API_KEY });
     const prompt = generatePrompt(indicators);
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
-    // FIX: Access the generated text using response.text
     return response.text;
   } catch (error) {
     console.error("Error fetching sentiment from Gemini API:", error);
     if (error instanceof Error && error.message.includes('API key not valid')) {
-         // FIX: Update error message to reference VITE_API_KEY.
          return "Ocorreu um erro ao buscar a análise de sentimento: A chave da API (VITE_API_KEY) é inválida. Por favor, verifique a chave e tente novamente.";
     }
     return "Ocorreu um erro ao buscar a análise de sentimento. Por favor, verifique o console para mais detalhes e se a sua chave de API é válida.";

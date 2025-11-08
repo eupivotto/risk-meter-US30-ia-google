@@ -1,4 +1,3 @@
-// FIX: Add reference to vite/client to resolve 'import.meta.env' type error.
 /// <reference types="vite/client" />
 
 import { useState, useEffect } from 'react';
@@ -10,17 +9,14 @@ const symbolMapping: Record<string, string> = {
   'US30': 'US30',
   'SPX500': 'SPX',
   'NAS100': 'NDX',
-  'TICK': 'TICK',
   'VIX': 'VIX',
-  'MOVE': 'MOVE',
   'DXY': 'DXY',
   'XAUUSD': 'XAU/USD',
   'WTI': 'CL',
   'US10Y': 'US10Y',
-  'US30Y': 'US30Y',
 };
 
-// FIX: Access environment variables using import.meta.env for Vite projects
+// Access environment variables using import.meta.env for Vite projects
 const TWELVE_DATA_API_KEY = import.meta.env.VITE_TWELVE_DATA_API_KEY;
 
 // Função para simular mudanças nos dados do mercado
@@ -103,7 +99,7 @@ export const useMarketData = (): { indicators: Indicator[]; error: string | null
   };
 
   useEffect(() => {
-    // FIX: Use ReturnType<typeof setInterval> to correctly type intervalId
+    // Use ReturnType<typeof setInterval> to correctly type intervalId
     // for environments where setInterval may return a NodeJS.Timeout object.
     let intervalId: ReturnType<typeof setInterval> | undefined;
 
@@ -124,7 +120,7 @@ export const useMarketData = (): { indicators: Indicator[]; error: string | null
 
   // Efeito separado para controlar a simulação quando um erro ocorre
   useEffect(() => {
-    // FIX: Use ReturnType<typeof setInterval> to correctly type intervalId
+    // Use ReturnType<typeof setInterval> to correctly type intervalId
     // for environments where setInterval may return a NodeJS.Timeout object.
     let intervalId: ReturnType<typeof setInterval> | undefined;
     if (isSimulated && error) {
