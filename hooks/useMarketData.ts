@@ -48,36 +48,37 @@ export const useMarketData = (): { indicators: Indicator[]; error: string | null
 
     try {
       const response = await fetch(url);
+      const data = await response.json(); // Lemos o JSON para obter a mensagem de erro mesmo se a resposta falhar
+
       if (!response.ok) {
+        const errorMessage = data.message || `Erro na API: ${response.statusText}`;
         if (response.status === 401) {
-            throw new Error('Chave da API da Twelve Data inválida ou não autorizada.');
+          throw new Error('Chave da API da Twelve Data inválida ou não autorizada.');
         }
-        throw new Error(`Erro na API: ${response.statusText}`);
+        throw new Error(errorMessage);
       }
-      const data = await response.json();
-      
-      const isBulkResponse = Array.isArray(data.data);
+
+      // Às vezes a API retorna 200 OK mas com um erro no corpo (ex: plano de API excedido)
+      if (data.status === 'error' || data.code >= 400) {
+        throw new Error(data.message || 'A API da Twelve Data retornou um erro inesperado.');
+      }
 
       setIndicators(prevIndicators =>
         prevIndicators.map(indicator => {
           const apiSymbol = symbolMapping[indicator.id];
-          let marketData;
-          
-          if (data.symbol && data.symbol === apiSymbol) {
-              marketData = data;
-          } 
-          else if (isBulkResponse) {
-             marketData = data.data.find((d: any) => d.symbol === apiSymbol);
-          } 
-          else {
-             marketData = data[apiSymbol];
+          const marketData = data[apiSymbol];
+
+          // Lida com o caso onde um símbolo individual retorna um erro
+          if (!marketData || marketData.code >= 400) {
+            console.warn(`Dados não encontrados ou inválidos para o símbolo: ${apiSymbol}`);
+            return indicator; // Retorna os dados antigos para este indicador específico
           }
 
-          if (marketData && (marketData.close || marketData.previous_close)) {
+          if (marketData.close || marketData.previous_close) {
             const newValue = parseFloat(marketData.close || marketData.previous_close);
             const change = parseFloat(marketData.change || '0');
             const changePercent = parseFloat(marketData.percent_change || '0');
-            
+
             return {
               ...indicator,
               value: newValue,
@@ -92,24 +93,44 @@ export const useMarketData = (): { indicators: Indicator[]; error: string | null
     } catch (err) {
       console.error("Failed to fetch market data:", err);
       setError(err instanceof Error ? err.message : "Falha ao buscar dados do mercado.");
+      // Se a busca falhar, ativamos a simulação para dar feedback visual
+      if (!isSimulated) setIsSimulated(true);
     }
   };
 
   useEffect(() => {
+    // FIX: Use ReturnType<typeof setInterval> to correctly type intervalId
+    // for environments where setInterval may return a NodeJS.Timeout object.
+    let intervalId: ReturnType<typeof setInterval> | undefined;
+
     if (!TWELVE_DATA_API_KEY) {
       console.warn("API Key da Twelve Data não configurada. Usando dados simulados.");
       setIsSimulated(true);
-      const interval = setInterval(() => {
+      intervalId = setInterval(() => {
         setIndicators(prev => simulateMarketData(prev));
       }, 3000); // Atualiza a simulação a cada 3 segundos
-      return () => clearInterval(interval);
     } else {
-        setIsSimulated(false);
-        fetchData(); // Busca inicial
-        const interval = setInterval(fetchData, 90000); // Atualiza a cada 90 segundos
-        return () => clearInterval(interval);
+      setIsSimulated(false);
+      fetchData(); // Busca inicial
+      intervalId = setInterval(fetchData, 90000); // Atualiza a cada 90 segundos
     }
-  }, []);
+
+    return () => clearInterval(intervalId);
+  }, []); // O array de dependências vazio garante que isso execute apenas uma vez na montagem
+
+  // Efeito separado para controlar a simulação quando um erro ocorre
+  useEffect(() => {
+    // FIX: Use ReturnType<typeof setInterval> to correctly type intervalId
+    // for environments where setInterval may return a NodeJS.Timeout object.
+    let intervalId: ReturnType<typeof setInterval> | undefined;
+    if (isSimulated && error) {
+        intervalId = setInterval(() => {
+            setIndicators(prev => simulateMarketData(prev));
+        }, 3000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isSimulated, error])
+
 
   return { indicators, error, isSimulated };
 };
