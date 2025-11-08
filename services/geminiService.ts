@@ -55,11 +55,13 @@ const generatePrompt = (indicators: Indicator[]): string => {
 };
 
 export const getMarketSentiment = async (indicators: Indicator[]): Promise<string> => {
-  const API_KEY = process.env.VITE_API_KEY;
+  // FIX: Per Gemini API guidelines, use process.env.API_KEY.
+  const API_KEY = process.env.API_KEY;
   
   if (!API_KEY) {
-    console.error("VITE_API_KEY environment variable not set.");
-    return "Erro de configuração: A variável de ambiente VITE_API_KEY (Gemini) não foi configurada. Por favor, adicione-a nas configurações do seu ambiente de produção (Vercel).";
+    // FIX: Update error message to reference API_KEY.
+    console.error("API_KEY environment variable not set.");
+    return "Erro de configuração: A variável de ambiente API_KEY (Gemini) não foi configurada. Por favor, adicione-a nas configurações do seu ambiente de produção (Vercel).";
   }
   
   try {
@@ -73,7 +75,8 @@ export const getMarketSentiment = async (indicators: Indicator[]): Promise<strin
   } catch (error) {
     console.error("Error fetching sentiment from Gemini API:", error);
     if (error instanceof Error && error.message.includes('API key not valid')) {
-         return "Ocorreu um erro ao buscar a análise de sentimento: A chave da API (VITE_API_KEY) é inválida. Por favor, verifique a chave e tente novamente.";
+         // FIX: Update error message to reference API_KEY.
+         return "Ocorreu um erro ao buscar a análise de sentimento: A chave da API (API_KEY) é inválida. Por favor, verifique a chave e tente novamente.";
     }
     return "Ocorreu um erro ao buscar a análise de sentimento. Por favor, verifique o console para mais detalhes e se a sua chave de API é válida.";
   }

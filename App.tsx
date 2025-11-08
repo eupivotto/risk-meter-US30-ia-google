@@ -30,7 +30,7 @@ function App() {
       <div className="max-w-7xl mx-auto">
         <Header />
         
-        {isSimulated && (
+        {isSimulated && !error && (
             <InfoBanner 
                 type="warning"
                 message="A chave da API Twelve Data (VITE_TWELVE_DATA_API_KEY) não foi encontrada."
@@ -41,7 +41,7 @@ function App() {
              <InfoBanner 
                 type="error"
                 message={error}
-                details="Não foi possível buscar os dados de mercado. Verifique sua chave de API e a conexão com a internet."
+                details="Não foi possível buscar os dados de mercado. Verifique sua chave de API e a conexão com a internet. O dashboard foi revertido para o modo de simulação."
              />
         )}
         
@@ -67,7 +67,8 @@ function App() {
             Data may be delayed. Not financial advice.
           </p>
            <p>
-            Ensure VITE_API_KEY (Gemini) and VITE_TWELVE_DATA_API_KEY are set in your environment.
+            {/* FIX: Update environment variable name to API_KEY for Gemini per guidelines. */}
+            Ensure API_KEY (Gemini) and VITE_TWELVE_DATA_API_KEY are set in your environment.
           </p>
           <p>&copy; 2024 US30 Market Open Dashboard. Todos os direitos reservados.</p>
         </footer>
