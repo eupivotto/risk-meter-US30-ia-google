@@ -1,0 +1,5 @@
+
+{
+  "name": "US30 Market Open Dashboard",
+  "description": "A comprehensive dashboard for operating the opening of the American market, specifically focusing on the US30 (Dow Jones index). It analyzes key indicators like VIX, gold, treasury yields, oil, and major indices to gauge big player appetite and determine the market bias before the open."
+}
