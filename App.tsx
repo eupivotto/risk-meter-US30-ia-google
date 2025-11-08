@@ -67,8 +67,8 @@ function App() {
             Data may be delayed. Not financial advice.
           </p>
            <p>
-            {/* FIX: Update environment variable name to API_KEY for Gemini per guidelines. */}
-            Ensure API_KEY (Gemini) and VITE_TWELVE_DATA_API_KEY are set in your environment.
+            {/* FIX: Update environment variable name to VITE_API_KEY for Gemini for Vite projects. */}
+            Ensure VITE_API_KEY (Gemini) and VITE_TWELVE_DATA_API_KEY are set in your environment.
           </p>
           <p>&copy; 2024 US30 Market Open Dashboard. Todos os direitos reservados.</p>
         </footer>

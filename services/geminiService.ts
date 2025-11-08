@@ -1,3 +1,6 @@
+// FIX: Add reference to vite/client to resolve 'import.meta.env' type error.
+/// <reference types="vite/client" />
+
 import { GoogleGenAI } from "@google/genai";
 import { Indicator } from '../types';
 
@@ -55,28 +58,31 @@ const generatePrompt = (indicators: Indicator[]): string => {
 };
 
 export const getMarketSentiment = async (indicators: Indicator[]): Promise<string> => {
-  // FIX: Per Gemini API guidelines, use process.env.API_KEY.
-  const API_KEY = process.env.API_KEY;
+  // FIX: Access environment variables using import.meta.env for Vite projects
+  // and use VITE_API_KEY for the Gemini API key.
+  const API_KEY = import.meta.env.VITE_API_KEY;
   
   if (!API_KEY) {
-    // FIX: Update error message to reference API_KEY.
-    console.error("API_KEY environment variable not set.");
-    return "Erro de configuração: A variável de ambiente API_KEY (Gemini) não foi configurada. Por favor, adicione-a nas configurações do seu ambiente de produção (Vercel).";
+    // FIX: Update error message to reference VITE_API_KEY.
+    console.error("VITE_API_KEY environment variable not set.");
+    return "Erro de configuração: A variável de ambiente VITE_API_KEY (Gemini) não foi configurada. Por favor, adicione-a nas configurações do seu ambiente de produção (Vercel).";
   }
   
   try {
+    // FIX: Pass API key in an object: { apiKey: API_KEY }
     const ai = new GoogleGenAI({ apiKey: API_KEY });
     const prompt = generatePrompt(indicators);
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
+    // FIX: Access the generated text using response.text
     return response.text;
   } catch (error) {
     console.error("Error fetching sentiment from Gemini API:", error);
     if (error instanceof Error && error.message.includes('API key not valid')) {
-         // FIX: Update error message to reference API_KEY.
-         return "Ocorreu um erro ao buscar a análise de sentimento: A chave da API (API_KEY) é inválida. Por favor, verifique a chave e tente novamente.";
+         // FIX: Update error message to reference VITE_API_KEY.
+         return "Ocorreu um erro ao buscar a análise de sentimento: A chave da API (VITE_API_KEY) é inválida. Por favor, verifique a chave e tente novamente.";
     }
     return "Ocorreu um erro ao buscar a análise de sentimento. Por favor, verifique o console para mais detalhes e se a sua chave de API é válida.";
   }

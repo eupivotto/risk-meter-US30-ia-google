@@ -1,3 +1,6 @@
+// FIX: Add reference to vite/client to resolve 'import.meta.env' type error.
+/// <reference types="vite/client" />
+
 import { useState, useEffect } from 'react';
 import { Indicator } from '../types';
 import { INITIAL_INDICATORS } from '../constants';
@@ -17,7 +20,8 @@ const symbolMapping: Record<string, string> = {
   'US30Y': 'US30Y',
 };
 
-const TWELVE_DATA_API_KEY = process.env.VITE_TWELVE_DATA_API_KEY;
+// FIX: Access environment variables using import.meta.env for Vite projects
+const TWELVE_DATA_API_KEY = import.meta.env.VITE_TWELVE_DATA_API_KEY;
 
 // Função para simular mudanças nos dados do mercado
 const simulateMarketData = (indicators: Indicator[]): Indicator[] => {
